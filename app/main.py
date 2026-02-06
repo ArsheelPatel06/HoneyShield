@@ -34,26 +34,67 @@ def health_check():
 
 from app.extractor import extract_upi_ids, extract_urls, extract_phone_numbers, extract_bank_accounts
 
+from fastapi import Body
+
+# No change to imports above...
+
 @app.post("/honeypot", response_model=HoneypotResponse, dependencies=[Depends(verify_api_key)])
-def honeypot_entry(request: HoneypotRequest):
-    # Validate body size
-    if len(request.message) > 5000:
+def honeypot_entry(request_data: dict = Body(default={})):
+    # 1. Flexible Message Extraction
+    # Keys to check in order of priority
+    possible_keys = ["message", "text", "input", "query", "prompt"]
+    message = ""
+    
+    for key in possible_keys:
+        if key in request_data and isinstance(request_data[key], str):
+            message = request_data[key]
+            break
+            
+    # Session ID extraction (optional)
+    session_id_in = request_data.get("session_id")
+    
+    # 2. Handle Empty/Missing Message -> Return Benign Response immediately
+    # We must generate session state even for benign to keep contract valid
+    from app.memory import get_or_create_session
+    
+    # If using existing session, we might want to increment turn?
+    # Requirement: "return ... next_message="" ... explanation 'No message provided'"
+    # If no message, we shouldn't really advance the scam state logic much, but we need valid objects.
+    
+    if not message.strip():
+        # Get or create valid session ID
+        real_session_id, _ = get_or_create_session(session_id_in)
+        
+        return HoneypotResponse(
+            is_scam=False,
+            scam_type="unknown",
+            confidence=0.0,
+            persona_used="none",
+            next_message="",
+            extracted_intelligence=ExtractedIntelligence(),
+            session_state=SessionState(
+                session_id=real_session_id,
+                turn=0, # Or keep as is? Let's say 0 or 1.
+                stage="hook"
+            )
+        )
+
+    # 3. Validate body size (only if message exists)
+    if len(message) > 5000:
         raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="Message too long (max 5000 chars)")
         
-    # Detect scam
+    # 4. Detect scam
     from app.detector import detect_scam
-    detection_result = detect_scam(request.message)
+    detection_result = detect_scam(message)
     
-    # Session Management
+    # 5. Session Management
     from app.memory import get_or_create_session, save_session
-    session_id, session_data = get_or_create_session(request.session_id)
+    session_id, session_data = get_or_create_session(session_id_in)
     
     # Update logic
     current_turn = session_data.get("turn", 0) + 1
     
-    # Update scam type if detected (priority to new detection, else keep old)
-    # If detection is "unknown" but we had a previous type, keep previous?
-    # Strategy: If we detect a specific scam now, overwrite. If unknown now, keep history.
+    # Update scam type if detected
     current_scam_type = detection_result["scam_type"]
     if current_scam_type == "unknown" and session_data.get("scam_type") != "unknown":
         current_scam_type = session_data.get("scam_type", "unknown")
@@ -79,15 +120,15 @@ def honeypot_entry(request: HoneypotRequest):
             current_turn
         )
         extracted_data = ExtractedIntelligence(
-            upi_ids=extract_upi_ids(request.message),
-            bank_accounts=extract_bank_accounts(request.message),
-            phone_numbers=extract_phone_numbers(request.message),
-            urls=extract_urls(request.message)
+            upi_ids=extract_upi_ids(message),
+            bank_accounts=extract_bank_accounts(message),
+            phone_numbers=extract_phone_numbers(message),
+            urls=extract_urls(message)
         )
     else:
         persona = "none"
         next_msg = ""
-        extracted_data = ExtractedIntelligence() # Defaults to empty lists
+        extracted_data = ExtractedIntelligence()
 
     # Save State
     new_state = {
@@ -99,7 +140,7 @@ def honeypot_entry(request: HoneypotRequest):
     save_session(session_id, new_state)
 
     return HoneypotResponse(
-        is_scam=(current_scam_type != "unknown"), # Return contextual is_scam
+        is_scam=(current_scam_type != "unknown"),
         scam_type=current_scam_type,
         confidence=detection_result["confidence"],
         persona_used=persona,
