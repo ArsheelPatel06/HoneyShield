@@ -18,6 +18,10 @@ class SessionState(BaseModel):
     turn: int
     stage: str
 
+class Explanation(BaseModel):
+    signals: List[str]
+    summary: str
+
 class HoneypotResponse(BaseModel):
     is_scam: bool
     scam_type: str
@@ -26,3 +30,4 @@ class HoneypotResponse(BaseModel):
     next_message: str
     extracted_intelligence: ExtractedIntelligence
     session_state: SessionState
+    explanation: Optional[Explanation] = None

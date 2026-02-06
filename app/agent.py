@@ -27,7 +27,9 @@ TEMPLATES = {
         "extraction": [
             "Okay, what's the link I need to click? Send it.",
             "Do you need my UPI ID or something? What is it?",
-            "Just tell me exactly where to pay."
+            "Just tell me exactly where to pay.",
+            "Send me the URL one more time? I lost it.",
+            "Is there a specific validation link? Send it here."
         ],
         "exit": [
             "Nah, this feels fake. Bye.",
@@ -47,9 +49,11 @@ TEMPLATES = {
             "Yes, I am listening. Please don't be angry with me."
         ],
         "extraction": [
-            "Where do I see this code thing? On the screen?",
-            "Which number do you need? The one on the card?",
-            "Can you send me the website link? I can't find it."
+            "I got a code on my phone. Where do I send it to you?",
+            "Do you need the OTP number? Or should I forward the message?",
+            "I can see a number. Should I read it to you?",
+            "Wait, sending the code. What number should I send it to?",
+            "Okay, I have the 4-digit code. Tell me where to put it."
         ],
         "exit": [
             "I am calling the police now.",
@@ -69,9 +73,11 @@ TEMPLATES = {
             "I don't clear payments usually, but if it's a refund ok."
         ],
         "extraction": [
-            "Send me the UPI ID to receive the money.",
-            "Which QR code should I scan to get the money?",
-            "Send the payment link, I will check."
+            "Send me your UPI ID so I can request the money.",
+            "Which QR code should I scan? Send it here.",
+            "Send the payment link/address, I will check.",
+            "Give me the UPI ID to complete the request.",
+            "I need the VPA address to verify the refund."
         ],
         "exit": [
             "You are a scammer! I know this trick.",
@@ -91,9 +97,11 @@ TEMPLATES = {
             "I sent my resume yesterday. Did you see it?"
         ],
         "extraction": [
-            "Where do I sign up? Send the link.",
-            "Do you need my bank details for salary?",
-            "Who should I contact? Give me the number."
+            "Where do I sign up? Send the registration link.",
+            "Do you need my bank details for salary deposit? Which one?",
+            "Who should I contact? Give me the HR number.",
+            "Is there a form to fill? Please share the URL.",
+            "I can pay the registration fee. Send me the account details."
         ],
         "exit": [
             "Asking for money for a job? Scam.",
@@ -113,9 +121,11 @@ TEMPLATES = {
             "I promise to pay back on time."
         ],
         "extraction": [
-            "Where to pay the processing fee? Send account.",
-            "Do you need my Aadhar or Bank details?",
-            "Send me the approval link please."
+            "Where to pay the processing fee? Send account number.",
+            "Do you need my Bank details or IFSC? Tell me.",
+            "Send me the approval link please, I will click.",
+            "Should I transfer the fee? Give me the UPI ID.",
+            "Provide the bank account to deposit the insurance fee."
         ],
         "exit": [
             "You are cheating poor people!",
@@ -135,9 +145,11 @@ TEMPLATES = {
             "I thought something happened to you."
         ],
         "extraction": [
-            "Do you need me to GPay you? Which number?",
-            "Where are you stuck? Send location link.",
-            "Send me the account details, I'll help."
+            "Do you need me to GPay you? Which number/ID?",
+            "Where are you stuck? Send location link or number.",
+            "Send me the account details, I'll help immediately.",
+            "What is your badge number or case ID? Tell me.",
+            "Give me the official UPI ID to pay the fine."
         ],
         "exit": [
             "Wait, this isn't Dave. Who are you?",
@@ -158,8 +170,8 @@ TEMPLATES = {
         ],
         "extraction": [
             "What do you want me to do?",
-            "Send me the details.",
-            "Do I need to pay?"
+            "Send me the details/link.",
+            "Do I need to pay? Where?"
         ],
         "exit": [
             "Stop text me.",

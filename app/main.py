@@ -38,7 +38,9 @@ from fastapi import Body
 
 # No change to imports above...
 
-@app.post("/honeypot", response_model=HoneypotResponse, dependencies=[Depends(verify_api_key)])
+from app.limiter import check_rate_limit
+
+@app.post("/honeypot", response_model=HoneypotResponse, dependencies=[Depends(verify_api_key), Depends(check_rate_limit)])
 def honeypot_entry(request_data: dict = Body(default={})):
     # 1. Flexible Message Extraction
     # Keys to check in order of priority
@@ -129,6 +131,20 @@ def honeypot_entry(request_data: dict = Body(default={})):
         persona = "none"
         next_msg = ""
         extracted_data = ExtractedIntelligence()
+        
+    # Generate Explanation
+    # If benign (is_scam=False), signals=[] summary="No scam indicators detected."
+    # If scam, signals=detection_result["signals"], summary="Detected {scam_type} with confidence {confidence}"
+    
+    from app.models import Explanation
+    if current_scam_type != "unknown":
+        expl_summary = f"Detected {current_scam_type} pattern with {detection_result['confidence']} confidence."
+        expl_signals = detection_result.get("signals", [])
+    else:
+        expl_summary = "No scam indicators detected."
+        expl_signals = []
+        
+    explanation_obj = Explanation(signals=expl_signals, summary=expl_summary)
 
     # Save State
     new_state = {
@@ -150,5 +166,6 @@ def honeypot_entry(request_data: dict = Body(default={})):
             session_id=session_id,
             turn=current_turn,
             stage=stage
-        )
+        ),
+        explanation=explanation_obj
     )
